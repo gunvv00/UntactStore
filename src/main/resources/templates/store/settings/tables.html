@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head"></head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='settings')"></div>
+        <div class="row mt-3 justify-content-center">
+            <div class="col-2">
+                <div th:replace="fragments.html :: store-settings-menu(currentMenu='tables')"></div>
+            </div>
+            <div class="col-6">
+                <div th:replace="fragments.html :: message"></div>
+                <div class="row">
+                    <div class="col-8"><h5><i class="fa fa-list" aria-hidden="true"></i> Table 관리</h5>
+                        <div class="card">
+                        <table class="table table-hover" style="margin-bottom: unset">
+                            <thead>
+                            <tr>
+                                <th scope="col">#번호</th>
+                                <th scope="col">인원</th>
+                                <th scope="col">수정</th>
+                            </tr>
+                            </thead>
+                            <tbody th:each="list: ${tableList}">
+                            <tr>
+                                <th scope="row">번호<span th:text="${list.getTableNum()}">번호</span></th>
+                                <td><span th:text="${list.getPersonnel()}">인원</span></td>
+                                <td>
+                                    <button style="padding: unset" type="button" class="btn btn-link" data-toggle="modal" th:data-target="'#update-'+${list.getId()}">
+                                        수정
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- Modal -->
+                            <div class="modal fade" th:id="'update-'+${list.getId()}" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-sm">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="staticBackdropLabel"><span th:text="${list.getTableNum()}"></span>번 Table 수정</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <form th:object="${tablesForm}" th:action="@{'/store/' + ${store.getPath()} + '/settings/update-table'}" method="post">
+                                            <div class="modal-body" align="center">
+                                                <input hidden type="text" name="id" th:value="${list.getId()}">
+                                                <div class="input-group" align="center">
+                                                    <label for="personnel">인원 </label>
+                                                    <input id="personnel" type="text" name="personnel">
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                                                <button type="submit" class="btn btn-primary">확인</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            </tbody>
+                            <caption style="padding: unset">
+                                <form align="center"  th:if="${tableList.size() > 0}" th:action="@{'/store/' + ${store.getPath()} + '/settings/remove-table'}" method="post">
+                                    <button style="padding: unset" class="btn btn-link" type="submit">
+                                        삭제
+                                    </button>
+                                </form>
+                            </caption>
+                        </table>
+                        </div>
+                        <div class="accordion" id="accordionExample">
+                            <div class="card">
+                                <button align="center" class="btn btn-link btn-block text-center" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    <span >새 테이블</span>
+                                </button>
+                                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                    <div class="card-body">
+                                        <form th:object="${tablesForm}" th:action="@{'/store/' + ${store.getPath()} + '/settings/new-table'}" method="post">
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                    <button class="btn btn-outline-secondary" type="submit">Add</button>
+                                                </div>
+                                                <select th:field="*{personnel}" class="custom-select col-sm-6" id="inputGroupSelect03" aria-label="Example select with button addon">
+                                                    <div th:each="num: ${#numbers.sequence(1, 10)}">
+                                                        <option th:value="${num}" th:text="${num}">1</option>
+                                                    </div>
+                                                </select>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+</body>
+</html>

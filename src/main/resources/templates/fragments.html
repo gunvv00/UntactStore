@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <title>UntacStore</title>
+    <link rel="stylesheet" href="/node_modules/bootstrap/dist/css/bootstrap.min.css" >
+    <link rel="stylesheet" href="/node_modules/font-awesome/css/font-awesome.min.css" />
+    <link rel="stylesheet" href="/node_modules/@yaireo/tagify/dist/tagify.css">
+    <link rel="stylesheet" href="/node_modules/summernote/dist/summernote-bs4.min.css">
+    <script src="/node_modules/jquery/dist/jquery.min.js" ></script>
+    <script src="/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js" ></script>
+    <script src="/node_modules/jdenticon/dist/jdenticon.min.js"></script>
+    <style>
+        .container {
+            max-width: 100%;
+        }
+
+        .tagify-outside{
+            border: 0;
+            padding: 0;
+            margin: 0;
+        }
+
+        #store-logo {
+            height: 200px;
+            width: 100%;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+
+        #store-logo img {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        body,
+        input,
+        button,
+        select,
+        optgroup,
+        textarea,
+        .tooltip,
+        .popover {
+            font-family: -apple-system, BlinkMacSystemFont, "Noto Sans KR", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+    </style>
+</head>
+<!--메인 네비게이터-->
+<nav th:fragment="main-nav(account)" class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <a class="navbar-brand" href="/" th:href="@{/}">
+        <th>UntactStore</th>
+<!--        <img src="/images/logo_sm.png" width="30" height="30">-->
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <form th:action="@{/search/store}" class="form-inline" method="get">
+                    <input class="form-control mr-sm-2" name="keyword" type="search" placeholder="Store 찾기" aria-label="Search" />
+                </form>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav justify-content-end">
+            <li class="nav-item" sec:authorize="!isAuthenticated()">
+                <a class="nav-link" th:href="@{/login}">로그인</a>
+            </li>
+            <li class="nav-item" sec:authorize="!isAuthenticated()">
+                <a class="nav-link" th:href="@{/sign-up}">가입</a>
+            </li>
+            <li class="nav-item" sec:authorize="isAuthenticated()">
+                <a class="nav-link" th:href="@{/notifications}">
+                    <i th:if="${!hasNotification}" class="fa fa-bell-o" aria-hidden="true"></i>
+                    <span class="text-info"><i th:if="${hasNotification}" class="fa fa-bell" aria-hidden="true"></i></span>
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="isAuthenticated()" >
+                <a class="nav-link btn btn-outline-primary" th:href="@{/my-waiting}">
+                    <i class="fa fa-list-ul" aria-hidden="true"></i> 대기표
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="isAuthenticated()" >
+                <a th:if="${account.hasStore()}" class="nav-link btn btn-outline-primary" th:href="@{'/store/mystore'}">
+                    <i class="fa fa-home" aria-hidden="true"></i> 내 가게
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="isAuthenticated()" >
+                <a th:if="${!account.hasStore()}" class="nav-link btn btn-outline-primary" th:href="@{'/store/new-store'}">
+                    <i class="fa fa-cog" aria-hidden="true"></i> 새 가게
+                </a>
+            </li>
+            <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    <svg width="24" height="24" th:data-jdenticon-value="${#authentication.name}" class="rounded border bg-light"></svg>
+                </a>
+                <div class="dropdown-menu dropdown-menu-sm-right" aria-labelledby="userDropdown">
+                    <h6 class="dropdown-header">
+                        <span sec:authentication="name">Username</span>
+                    </h6>
+                    <a class="dropdown-item" th:href="@{'/profile/' + ${#authentication.name}+'?view=profile'}">내 정보</a>
+                    <a class="dropdown-item" th:href="@{'/profile/' + ${#authentication.name}+'?view=favorites'}">즐겨찾기</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="#" th:href="@{'/settings/profile'}">설정</a>
+                    <form class="form-inline my-2 my-lg-0" action="#" th:action="@{/logout}" method="post">
+                        <button class="dropdown-item" type="submit">로그아웃</button>
+                    </form>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+<!--메인 푸터-->
+<footer th:fragment="footer">
+    <div class="row justify-content-center">
+        <span>UntactStore.</span>
+        <small class="d-block mb-3 text-muted">&copy; 2020</small>
+    </div>
+</footer>
+<!--유효성검사-->
+<script type="application/javascript" th:fragment="form-validation">
+    (function () {
+        'use strict';
+
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+
+            // Loop over them and prevent submission
+            Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        }, false)
+    }())
+</script>
+
+<!--셋팅 메뉴-->
+<div th:fragment="settings-menu (currentMenu)" class="list-group">
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'profile'}? active" href="#" th:href="@{/settings/profile}">내 정보</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'keyword-location'}? active" href="#" th:href="@{/settings/keyword-location}">키워드/지역</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'notifications'}? active" href="#" th:href="@{/settings/notifications}">알림</a>
+    <a class="list-group-item list-group-item-action list-group-item-danger" th:classappend="${currentMenu == 'account'}? active" href="#" th:href="@{/settings/account}">계정</a>
+</div>
+
+<!--툴팁-->
+<script th:fragment="tooltip" type="application/javascript">
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    })
+</script>
+
+<!--에디터-->
+<div th:fragment="editor-script">
+    <script src="/node_modules/summernote/dist/summernote-bs4.js"></script>
+    <script type="application/javascript">
+        $(function () {
+            $('.editor').summernote({
+                fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New', 'Noto Sans KR', 'Merriweather'],
+                placeholder: '상점에 대해 소개하는 글을 자세히 적어 주세요.',
+                tabsize: 2,
+                height: 300
+            });
+        });
+    </script>
+</div>
+
+<!--상점 정보-->
+<div th:fragment="store-info">
+    <div class="row pt-4 text-left justify-content-center bg-light">
+        <div class="col-4">
+            <a href="#" class="text-decoration-none" th:href="@{'/store/' + ${store.path}}">
+                <strong class="h2" th:text="${store.name}">상점 이름</strong>
+            </a>
+            <span sec:authorize="isAuthenticated()" id="star_grade">
+                <a th:each="on: ${#numbers.sequence(1, 5)}" th:classappend="${on <= grade}? on" th:href="@{'/store/'+${store.path}+'/grade?grade='+${on}}">★</a>
+                <span>(<i class="fa fa-thumbs-o-up" aria-hidden="true"></i> <span th:text="${#numbers.formatDecimal(store.grade,1,1)}"></span>)</span>
+            </span>
+<!--            <script>-->
+<!--                $('#star_grade a').click(function(){-->
+<!--                    $(this).parent().children("a").removeClass("on");  /* 별점의 on 클래스 전부 제거 */-->
+<!--                    $(this).addClass("on").prevAll("a").addClass("on"); /* 클릭한 별과, 그 앞 까지 별점에 on 클래스 추가 */-->
+<!--                    return false;-->
+<!--                });-->
+<!--            </script>-->
+            <style>
+                #star_grade a{
+                    text-decoration: none;
+                    color: gray;
+                }
+                #star_grade a.on{
+                    color: red;
+                }
+            </style>
+        </div>
+        <div class="col-4 text-right justify-content-end">
+            <!--            -->
+            <span sec:authorize="isAuthenticated()" class="btn-group" role="group" aria-label="Basic example" data-toggle="tooltip" data-placement="bottom" title="상점 오픈 하기">
+                <button th:if="${!store.open && !store.checkOwner(#authentication.principal)}" class="btn btn-secondary btn-sm" disabled>
+                    CLOSE
+                </button>
+                <a th:if="${!store.open  && store.checkOwner(#authentication.principal)}" class="btn btn-primary btn-sm" th:href="@{'/store/'+${store.path}+'/settings/open'}" >
+                    CLOSE
+                </a>
+            </span>
+            <!--            -->
+            <span sec:authorize="isAuthenticated()" class="btn-group" role="group" aria-label="Basic example" data-toggle="tooltip" data-placement="bottom" title="상점 닫기">
+                <button th:if="${store.open && !store.checkOwner(#authentication.principal)}" class="btn btn-secondary btn-sm" disabled>
+                    OPEN
+                </button>
+                <a th:if="${store.open && store.checkOwner(#authentication.principal)}" class="btn btn-primary btn-sm" th:href="@{'/store/'+${store.path}+'/settings/close'}" >
+                    OPEN
+                </a>
+            </span>
+            <span sec:authorize="isAuthenticated()"
+                  class="btn-group" role="group" aria-label="Basic example">
+                <a class="btn btn-outline-primary" href="#"
+                   th:text="${store.getFavoritesList().size()}" data-toggle="tooltip" data-placement="bottom" title="즐겨찾기 수">1
+                </a>
+                <a th:if="${store.isFavoritesable(#authentication.principal)}" class="btn btn-primary"
+                   th:href="@{'/store/' + ${store.path} + '/addFavorites'}"
+                   data-toggle="tooltip" data-placement="bottom" title="즐겨찾기 추가">
+                    <i class="fa fa-star-o" aria-hidden="true"></i> 즐겨찾기
+                </a>
+                <a th:if="${!store.isFavoritesable(#authentication.principal)}" class="btn btn-info"
+                   th:href="@{'/store/' + ${store.path} + '/removeFavorites'}"
+                   data-toggle="tooltip" data-placement="bottom" title="즐겨찾기 취소">
+                    <i class="fa fa-star" aria-hidden="true"></i> 즐겨찾기 중
+                </a>
+            </span>
+        </div>
+    </div>
+    <div class="row pt-1 justify-content-center bg-light">
+        <div class="col-4">
+            <p class="lead" th:text="${store.getShortDescription()}" style="margin: unset"></p>
+        </div>
+        <div class="col-4 text-right justify-content-end">
+            <span  class="btn-group" role="group" aria-label="Basic example" th:if="${store.open}">
+                <a sec:authorize="isAuthenticated()" th:if="${!store.waiting && store.checkOwner(#authentication.principal)}" class="btn btn-primary" th:href="@{'/store/'+${store.path}+'/settings/full'}"
+                   data-toggle="tooltip" data-placement="bottom" title="대기중 켜기">
+                    자리있음
+                </a>
+                <button sec:authorize="!isAuthenticated()" th:if="${!store.waiting}" class="btn btn-primary" disabled>
+                    자리있음
+                </button>
+                <span sec:authorize="isAuthenticated()" th:if="${store.waiting && store.open}"
+                      class="btn-group" role="group" aria-label="Basic example">
+                    <a class="btn btn-outline-primary" th:href="@{'/store/' + ${store.path} + '/new-waiting?personnel=4'}"
+                       th:text="${store.countWaitingList()}" data-toggle="tooltip" data-placement="bottom" title="현재 대기중인 인원">1
+                    </a>
+                    <button th:if="${store.isWaitingable(#authentication.principal)}" class="btn btn-primary" data-toggle="modal" data-target="#waiting">
+                        <i class="fa fa-user-o" aria-hidden="true"></i> 줄서기
+                    </button>
+<!--                    <a th:if="${store.isWaitingable(#authentication.principal)}" class="btn btn-primary" th:href="@{'/store/' + ${store.path} + '/new-waiting?personnel=4'}"-->
+<!--                       data-toggle="tooltip" data-placement="bottom" title="대기표 발급">-->
+<!--                        <i class="fa fa-user-o" aria-hidden="true"></i> 줄서기-->
+<!--                    </a>-->
+                    <a th:if="${!store.isWaitingable(#authentication.principal)}" class="btn btn-primary" th:href="@{'/store/' + ${store.path} + '/exit-waiting'}"
+                       data-toggle="tooltip" data-placement="bottom" title="대기 취소">
+                        <i class="fa fa-user" aria-hidden="true"></i> Waiting...
+                    </a>
+                    <a th:if="${store.checkOwner(#authentication.principal)}" class="btn btn-danger" th:href="@{'/store/'+${store.path}+'/settings/Unfilled'}"
+                       data-toggle="tooltip" data-placement="bottom" title="대기중 끄기">
+                        대기중
+                    </a>
+                </span>
+            </span>
+            <div class="modal fade" id="waiting" tabindex="-1" role="dialog" aria-labelledby="leaveTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="sit-up-title" th:text="${store.name}+' 대기표 발급'"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form th:action="@{'/store/' + ${store.path} + '/new-waiting'}" method="get">
+                        <div class="modal-body">
+                            <p>대기표를 발급 받으시겠습니까?</p>
+                            <p><span th:text="${'현재 '+store.countWaitingList()+'명 대기중'}"></span></p>
+                            <div class="input-group">
+                                <label for="personnel">인원</label>
+                                <select id="personnel" name="personnel">
+                                    <option th:each="num: ${#numbers.sequence(1, 10)}" th:value="${num}" th:text="${num}">1</option>
+                                </select>
+                            </div>
+                            <p>감사합니다.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                                <button class="btn btn-primary" type="submit" aria-describedby="submitHelp">확인</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row pt-1 justify-content-center bg-light">
+        <div class="col-4">
+            <span sec:authorize="isAuthenticated()"
+                  class="btn-group" role="group" aria-label="Basic example">
+                <a class="btn btn-primary" th:if="${store.checkOwner(#authentication.principal)}" th:href="@{'/store/' + ${store.path} + '/tables/list'}">
+                    <i class="fa fa-table" aria-hidden="true"></i> Table list
+                </a>
+                <a class="btn btn-primary" th:if="${store.checkOwner(#authentication.principal)}" th:href="@{'/store/' + ${store.path} + '/management'}">
+                    매출
+                </a>
+                <button th:if="${store.checkOwner(#authentication.principal)}" class="btn btn-primary"
+                        data-toggle="modal" data-target="#qr_code"
+                        data-placement="bottom" title="QR코드 확인">
+                    <i class="fa fa-qrcode" aria-hidden="true"></i> QR_CODE
+                </button>
+            </span>
+            <div class="modal fade" id="qr_code" tabindex="-1" role="dialog" aria-labelledby="leaveTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qr_code-title" th:text="${store.name+'상점 / QR 코드'}"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <iframe th:src="@{'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=http://localhost:8080/store/'+${store.path}}" style="width: 255px; height: 255px"></iframe>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div sec:authorize="isAuthenticated()" class="col-4 text-right justify-content-end" th:if="${store.checkOwner(#authentication.principal)}">
+            <span sec:authorize="isAuthenticated()" th:if="${store.waiting && store.open}"
+                  class="btn-group" role="group" aria-label="Basic example">
+                <a class="btn btn-outline-primary" th:href="@{'/store/' + ${store.path} + '/waiting-list'}"
+                   th:text="${store.countWaitingList()}">1
+                </a>
+                <a class="btn btn-primary"
+                   th:href="@{'/store/' + ${store.path} + '/waiting-list '}">
+                    <i class="fa fa-users" aria-hidden="true"></i> Waiting Table
+                </a>
+            </span>
+        </div>
+    </div>
+    <div class="row pt-1 justify-content-center bg-light">
+        <div class="col-8">
+            <p>
+                <span th:each="keyword: ${store.keywords}"
+                      class="font-weight-light text-monospace badge badge-pill badge-info mr-3">
+                    <a th:href="@{'/search/store?keyword=' + ${keyword.name}}" class="text-decoration-none text-white">
+                        <i class="fa fa-tag"></i> <span th:text="${keyword.name}">Keyword</span>
+                    </a>
+                </span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!--상점 메인 메뉴-->
+<div th:fragment="store-menu (storeMenu)" class="row px-3 justify-content-center bg-light">
+    <nav class="col-8 nav nav-tabs">
+        <a class="nav-item nav-link" href="#" th:classappend="${storeMenu == 'info'}? active" th:href="@{'/store/' + ${store.path}}">
+            <i class="fa fa-info-circle"></i> 소개
+        </a>
+        <a class="nav-item nav-link" href="#" th:classappend="${storeMenu == 'menu'}? active" th:href="@{'/store/' + ${store.path} + '/menu'}">
+            <i class="fa fa-list-alt" aria-hidden="true"></i> 메뉴
+        </a>
+        <a class="nav-item nav-link" th:classappend="${storeMenu == 'review'}? active" href="#" th:href="@{'/store/' + ${store.path} + '/review'}">
+            <i class="fa fa-envelope-o" aria-hidden="true"></i> 리뷰게시판
+        </a>
+        <a sec:authorize="isAuthenticated()" th:if="${store.isOwner(#authentication.principal)}"
+           class="nav-item nav-link" th:classappend="${storeMenu == 'settings'}? active" href="#" th:href="@{'/store/' + ${store.path} + '/settings/profile'}">
+            <i class="fa fa-cog"></i> 설정
+        </a>
+    </nav>
+</div>
+
+<!--상점 셋팅 메뉴-->
+<div th:fragment="store-settings-menu (currentMenu)" class="list-group">
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'profile'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/profile'}">소개</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'banner'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/banner'}">배너</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'menu'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/menu'}">메뉴</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'tables'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/tables'}">테이블</a>
+    <a class="list-group-item list-group-item-action" th:classappend="${currentMenu == 'keywords'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/keywords'}">키워드/주소 설정</a>
+    <a class="list-group-item list-group-item-action list-group-item-danger" th:classappend="${currentMenu == 'store'}? active"
+       href="#" th:href="@{'/store/' + ${store.path} + '/settings/store'}">상점</a>
+</div>
+
+<!--메시지-->
+<div th:fragment="message" th:if="${message}" class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+    <span th:text="${message}">완료</span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--날자 형식-->
+<div th:fragment="date-time">
+    <script src="/node_modules/moment/min/moment-with-locales.min.js"></script>
+    <script type="application/javascript">
+        $(function () {
+            moment.locale('ko');
+            $(".date-time").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").format('LLL');
+            });
+            $(".date").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").format('LL');
+            });
+            $(".weekday").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").format('dddd');
+            });
+            $(".time").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").format('LT');
+            });
+            $(".calendar").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").calendar();
+            });
+            $(".fromNow").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").fromNow();
+            });
+            $(".date-weekday-time").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").format('LLLL');
+            });
+            $(".abcd").text(function(index, dateTime) {
+                return moment(dateTime, "YYYY-MM-DD`T`hh:mm").fromNow();
+            });
+        })
+    </script>
+</div>
+
+<!--주문목록-->
+<div th:fragment="order-list (type, orderList)">
+    <div th:each="order: ${orderList}">
+        <div class="card">
+            <a class="btn btn-light card-header text-left  p-0" data-toggle="collapse" th:href="'#order'+${order.id}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                <table class="table table-borderless m-0">
+                    <tr class="row text-center">
+                        <th class="col" th:text="'#table'+${order.tables.tableNum}">테이블 번호</th>
+                        <th class="col" th:text="${order.tables.account?.name}">주문자</th>
+                        <th class="col"><strong>주문</strong></th>
+                        <th class="col"><span class="time" th:text="${order.orderAt}">시간</span></th>
+                        <th class="col"><span th:text="${order.ordersAmount>0?#numbers.formatInteger(order.ordersAmount, 0, 'COMMA'):'　　　'}">가격</span></th>
+                    </tr>
+                </table>
+            </a>
+        </div>
+        <div class="collapse" th:id="'order'+${order.id}">
+            <div class="card card-body">
+                <div class="row justify-content-center">
+                    <span class="col">
+                        <div class="row" th:each="setmenu: ${order.setMenuList}">
+                            <span class="col" th:text="${setmenu.title}">메뉴</span>
+                            <span class="col" th:text="${setmenu.totalPrice}">가격</span>
+                        </div>
+                        <div class="row" th:each="menu: ${order.menuList}">
+                            <span class="col" th:text="${menu.name}">메뉴</span>
+                            <span class="col" th:text="${menu.price}">가격</span>
+                        </div>
+                        <div class="row" th:each="request: ${order.requestOrderList}">
+                            <span class="col" th:text="${request.content}">요청</span>
+                        </div>
+                    </span>
+                    <span class="col justify-content-end text-right">
+                        <a th:if="${type == 'newOrderList'}" th:href="@{'/store/'+${store.path}+'/tables/'+${tables.tablesPath}+'/management/confirm-orders?id='+${order.id}}">확인</a>
+                        <a th:if="${type == 'beforeCompleteList'}" th:href="@{'/store/'+${store.path}+'/tables/'+${tables.tablesPath}+'/management/after-complete?id='+${order.id}}">완료</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--1587 x 244-->
+<!--상점 리스트 카드-->
+<div th:fragment="store-list (storeList)" class="col-sm-12">
+    <div class="row">
+        <div class="col-md-4" th:each="store: ${storeList}">
+            <div class="card md-4 shadow-sm">
+                <img th:src="${store.getImage()}" class="card-img-top" >
+                <div class="card-body">
+                    <a th:href="@{'/store/'+${store.path}}" class="text-decoration-nen">
+                        <h5 class="card-title context m-0" th:text="${store.name}"></h5>
+                    </a>
+                    <p class="card-text text-muted" th:text="${store.shortDescription}"></p>
+                    <p class="card-text context">
+                        <span th:each="sKeyword: ${store.keywords}" class="font-weight-light text-monospace badge badge-pill badge-info mr-3">
+                            <i class="fa fa-tag"></i> <span th:text="${sKeyword.name}">keyword</span>
+                        </span>
+                    </p>
+<!--                    TODO 평점-->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--작은 상점 리스트 카드-->
+<div th:fragment="store-list-small (storeList)">
+    <div class="card" th:each="store: ${storeList}">
+        <div class="media">
+            <div class="media-body text-left">
+                <p class="m-0 h6">
+                    <a th:href="@{'/store/'+${store.path}}" class="text-decoration-nen">
+                        <strong class="card-title context" th:text="${store.name}"></strong>
+                        <small class="badge badge-primary" th:if="${store.open}">OPEN</small>
+                        <small class="badge badge-secondary" th:if="${!store.open}">CLOSE</small>
+                    </a>
+                </p>
+                <p class="m-0">
+                    <span class="card-subtitle text-muted" th:text="${store.shortDescription}"></span>
+                </p>
+                <p class="m-0 text-dark">
+                    <span th:text="${store.operatingTime}"></span>
+                    <small>
+                        <i class="fa fa-thumbs-o-up" aria-hidden="true"></i>
+                        <span th:text="${store.grade}">
+                            4.5
+                        </span>
+                        <span>
+                            (17)
+                        </span>
+                    </small>
+                    <span class="text-dark">|</span>
+                    <small>
+                        <i class="fa fa-star-o" aria-hidden="true"></i>
+                        <span th:text="${store.favoritesList.size()}">
+                            12
+                        </span>
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--배너-->
+<div th:fragment="store-banner" th:if="${store.useBanner}" class="row" id="store-logo">
+    <img th:src="${store.image}"/>
+</div>
+
+<!--알림 리스트-->
+<ul th:fragment="notification-list (notifications)" class="list-group list-group-flush">
+    <a href="#" th:href="@{${noti.link}}" th:each="noti: ${notifications}"
+       class="list-group-item list-group-item-action">
+        <div class="d-flex w-100 justify-content-between">
+            <small class="text-muted" th:text="${noti.title}">Noti title</small>
+            <small class="fromNow text-muted" th:text="${noti.createdLocalDateTime}">3 days ago</small>
+        </div>
+        <p th:text="${noti.message}" class="text-left mb-0 mt-1">message</p>
+    </a>
+</ul>
+
+<!--페이징-->
+<div th:fragment="pagination (page, sortProperty)">
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${!page.hasPrevious()}? disabled">
+                <a th:href="@{'/search/store?keyword='+${keyword}+'&sort='+${sortProperty}+',desc&page='+${page.getNumber()-1}}" class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+            </li>
+            <li th:if="${i >=0}" class="page-item" th:classappend="${i == page.getNumber()}? active"
+                th:each="i: ${#numbers.sequence(0, page.getTotalPages() - 1)}">
+                <a th:href="@{'/search/store?keyword=' + ${keyword} + '&sort=' + ${sortProperty} + ',desc&page=' + ${i}}"
+                   class="page-link" href="#" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${!page.hasNext()}? disabled">
+                <a th:href="@{'/search/store?keyword=' + ${keyword} + '&sort=' + ${sortProperty} + ',desc&page=' + ${page.getNumber() + 1}}"
+                   class="page-link">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<div th:fragment="pagination-home (page, sortProperty)">
+    <nav>
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${!page.hasPrevious()}? disabled">
+                <a th:href="@{'/?sort='+${sortProperty}+',desc&page='+${page.getNumber()-1}}" class="page-link" href="#" tabindex="-1" aria-disabled="true">Previous</a>
+            </li>
+            <li th:if="${i >=0}" class="page-item" th:classappend="${i == page.getNumber()}? active"
+                th:each="i: ${#numbers.sequence(0, page.getTotalPages() - 1)}">
+                <a th:href="@{'/?sort=' + ${sortProperty} + ',desc&page=' + ${i}}"
+                   class="page-link" href="#" th:text="${i + 1}">1</a>
+            </li>
+            <li class="page-item" th:classappend="${!page.hasNext()}? disabled">
+                <a th:href="@{'/?&sort=' + ${sortProperty} + ',desc&page=' + ${page.getNumber() + 1}}"
+                   class="page-link">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='settings')"></div>
+        <div class="row mt-3 justify-content-center">
+            <div class="col-2">
+                <div th:replace="fragments.html :: store-settings-menu(currentMenu='profile')"></div>
+            </div>
+            <div class="col-6">
+                <div th:replace="fragments.html :: message"></div>
+                <h5><i class="fa fa-list" aria-hidden="true"></i> 내 Store 관리</h5>
+                <form class="needs-validation" th:action="@{'/store/' + ${store.getPath()} + '/settings/profile'}"
+                      th:object="${storeProfileForm}" method="post" novalidate>
+<!--                    <div class="form-group">-->
+<!--                        <label for="shortDescription">영업 시간</label>-->
+<!--                        <textarea id="shortDescription" type="textarea" th:field="*{shortDescription}" class="form-control"-->
+<!--                                  placeholder="상점를 짧게 소개해 주세요." aria-describedby="shortDescriptionHelp" required maxlength="100">-->
+<!--                        </textarea>-->
+<!--                        <small id="shortDescriptionHelp" class="form-text text-muted">-->
+<!--                            100자 이내로 상점를 짧은 소개해 주세요.-->
+<!--                        </small>-->
+<!--                        <small class="invalid-feedback">짧은 소개를 입력하세요.</small>-->
+<!--                        <small class="form-text text-danger" th:if="${#fields.hasErrors('shortDescription')}" th:errors="*{shortDescription}">ShortDescription Error</small>-->
+<!--                    </div>-->
+                    <div class="form-group">
+                        <label for="phone">전화번호</label>
+                        <input id="phone" type="text" th:field="*{phone}" class="form-control"
+                                  placeholder="010-2228-5677" aria-describedby="phoneHelp" required maxlength="100">
+                        </input>
+                        <small id="phoneHelp" class="form-text text-muted">
+                            전화번호를 입력해 주세요.
+                        </small>
+                        <small class="invalid-feedback">전화번호를 입력해 주세요.</small>
+                        <small class="form-text text-danger" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}">Phone Error</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="operatingTime">운영 시간</label>
+                        <input id="operatingTime" type="text" th:field="*{operatingTime}" class="form-control"
+                               placeholder="ex) 매일 10:00 ~ 22:30, 매주 월 휴무" aria-describedby="operatingTimeHelp" required maxlength="100">
+                        </input>
+                        <small id="operatingTimeHelp" class="form-text text-muted">
+                            운영시간을 입력해 주세요.
+                        </small>
+                        <small class="invalid-feedback">운영시간을 입력해 주세요.</small>
+                        <small class="form-text text-danger" th:if="${#fields.hasErrors('operatingTime')}" th:errors="*{operatingTime}">operatingTime Error</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="shortDescription">짧은 소개</label>
+                        <textarea id="shortDescription" type="textarea" th:field="*{shortDescription}" class="form-control"
+                                  placeholder="상점를 짧게 소개해 주세요." aria-describedby="shortDescriptionHelp" required maxlength="100">
+                        </textarea>
+                        <small id="shortDescriptionHelp" class="form-text text-muted">
+                            100자 이내로 상점를 짧은 소개해 주세요.
+                        </small>
+                        <small class="invalid-feedback">짧은 소개를 입력하세요.</small>
+                        <small class="form-text text-danger" th:if="${#fields.hasErrors('shortDescription')}" th:errors="*{shortDescription}">ShortDescription Error</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fullDescription">상세 소개</label>
+                        <textarea id="fullDescription" type="textarea" th:field="*{fullDescription}" class="editor form-control"
+                                  placeholder="상점를 자세히 설명해 주세요." aria-describedby="fullDescriptionHelp" required></textarea>
+                        <small id="fullDescriptionHelp" class="form-text text-muted">
+                            상점에 대해 자세히 적어 주세요.
+                        </small>
+                        <small class="invalid-feedback">상세 소개를 입력하세요.</small>
+                        <small class="form-text text-danger" th:if="${#fields.hasErrors('fullDescription')}" th:errors="*{fullDescription}">FullDescription Error</small>
+                    </div>
+
+                    <div class="form-group">
+                        <button class="btn btn-primary btn-block" type="submit"
+                                aria-describedby="submitHelp">수정하기</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+    <script th:replace="fragments.html :: form-validation"></script>
+    <script th:replace="fragments.html :: editor-script"></script>
+</body>
+</html>

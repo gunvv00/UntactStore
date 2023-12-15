@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='info')"></div>
+
+        <div class="row px-3 justify-content-center">
+            <div class="col-8 my-3 p-3 bg-white rounded shadow-sm">
+                <h6 class="border-bottom border-gray pb-2 mb-0">Information</h6>
+                <div class="media text-muted pt-3" th:if="${store.operatingTime}">
+                    <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                        <strong class="d-block text-gray-dark"><i class="fa fa-clock-o" aria-hidden="true"></i> 영업시간</strong>
+                        <span class="col-10" th:text="${store.getOperatingTime()}"></span>
+                    </p>
+                </div>
+                <div class="media text-muted pt-3" th:if="${store.address}">
+                    <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                        <strong class="d-block text-gray-dark">
+                            <i class="fa fa-map-marker" aria-hidden="true"></i> 위치
+                            <a th:href="@{'https://map.kakao.com/link/search/'+${store.address.roadAddress}+' '+${store.address.detailAddress}}" target="_blank">link</a>
+                        </strong>
+                        <span class="col-10">
+                            <span th:text="${store.address.roadAddress}"></span>
+                            <span th:text="${store.address.detailAddress}"></span>
+                        </span>
+                    </p>
+                </div>
+                <div class="modal fade" id="map" tabindex="-1" role="dialog" aria-labelledby="leaveTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="qr_code-title">위치</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <iframe src="https://map.kakao.com/link/search/카카오"></iframe>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="media text-muted pt-3" th:if="${store.phone}">
+                    <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
+                        <strong class="d-block text-gray-dark"><i class="fa fa-phone" aria-hidden="true"></i> 전화번호</strong>
+                        <span class="col-10" th:text="${store.getPhone()}"></span>
+                    </p>
+                </div>
+                <div class="text-muted pt-3" th:if="${store.fullDescription}">
+                    <p class="mb-0 small lh-125" >
+                        <strong class="d-block text-gray-dark"><i class="fa fa-sticky-note-o" aria-hidden="true"></i> 상세설명</strong>
+                        <span th:utext="${store.getFullDescription()}"></span>
+                    </p>
+                </div>
+                <small class="d-block text-right mt-3">
+                    <a sec:authorize="isAuthenticated()" th:if="${store.isOwner(#authentication.principal)}" th:href="@{'/store/'+${store.getPath()}+'/settings/profile'}">All updates</a>
+                </small>
+            </div>
+        </div>
+
+
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=965498d4db4b10fc849c5635abaac78b"></script>
+    <script type="text/javascript">
+        // var container = document.getElementById('map');
+        // var options = {
+        //     center: new kakao.maps.LatLng(33.450701, 126.570667),
+        //     level: 3
+        // };
+        //
+        // var map = new kakao.maps.Map(container, options);
+    </script>
+</body>
+</html>

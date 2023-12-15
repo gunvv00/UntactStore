@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div class="container">
+<!--        <div th:if="${account.hasAvailableWaiting()}">-->
+<!--            <span>발급받은 티켓이 없습니다.</span>-->
+<!--        </div>-->
+        <div class="text-center"><span>Waiting List</span></div>
+        <div class="row justify-content-center">
+            <div class="row col-6">
+                <div class="col-md-4" th:each="waiting: ${waitingList}">
+                    <div class="card" style="width: 15rem;">
+                        <div class="card-body">
+                            <a th:href="@{'/store/' + ${waiting.store.path}}" class="font-weight-bold">
+                                <h1 class="card-title" th:text="${waiting.getTurn()+' 남음'}">turn</h1>
+                                <h6 class="card-subtitle mb-2 text-muted" th:text="${waiting.getStore().getName()}">store</h6>
+                                <div class="justify-content-end card-text" th:text="${waiting.getPersonnel()+'명'}">인원</div>
+                                <div class="card-text" th:text="${waiting.getAccount().getName()}">account</div>
+                            </a>
+                            <a th:href="@{'/store/' + ${waiting.store.path} + '/exit-waiting'}" class="float-right">취소</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <div class="text-center"><span>끝난 목록</span></div>
+        <div class="row justify-content-center">
+            <div class="row col-6">
+                <div class="col-md-4" th:each="end: ${endList}">
+                    <div class="card" style="width: 15rem;">
+                        <div class="card-body">
+                            <h1 class="card-title" th:text="${end.getTurn()+' 남음'}">turn</h1>
+                            <h6 class="card-subtitle mb-2 text-muted" th:text="${end.getStore().getName()}">store</h6>
+                            <div class="justify-content-end card-text" th:text="${end.getPersonnel()+'명'}">인원</div>
+                            <div class="card-text" th:text="${end.getAccount().getName()}">account</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: date-time"></script>
+</body>
+</html>

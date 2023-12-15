@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='menu')"></div>
+
+        <ul class="list-unstyled">
+        <div class="row px-3 justify-content-center">
+            <div class="col-8 my-3 p-3 bg-light rounded shadow-sm">
+                <h6 class="border-bottom border-gray pb-2 mb-0">Set Menu List</h6>
+                <div class="media text-muted pt-2 accordion" id="accordionExample" th:each="setmenu: ${setmenuList}" >
+                    <div class="card col pt-2 pb-2">
+                        <button style="padding: unset" class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" th:data-target="'#target'+${setmenu.id}" aria-expanded="true" aria-controls="collapseOne">
+                            <li class="media">
+                                <svg th:if="${#strings.isEmpty(setmenu?.image)}" th:data-jdenticon-value="${setmenu.title}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                <img th:if="${!#strings.isEmpty(setmenu?.image)}" th:src="${setmenu?.image}" width="64" height="64" class="rounded border mr-3"/>
+                                <div class="media-body">
+                                    <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${setmenu.title}"></span>&nbsp;<span class="badge badge-primary">세트메뉴</span></h5>
+                                    <span th:text="${#numbers.formatInteger(setmenu.getTotalPrice(), 0, 'COMMA')}">1,000</span>&nbsp;<span th:text="${setmenu.explanation}">설명</span>
+                                </div>
+                            </li>
+                        </button>
+                        <div th:id="'target'+${setmenu.id}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <div class="card-body p-1" th:each="menu: ${setmenu.getMenuList()}">
+                                <div>&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <strong th:text="${menu.name}">이름</strong>-
+                                    <span th:text="${menu.price}">가격</span>-
+                                    <span th:text="${menu.explanation}">설명</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h6 class="border-bottom border-gray pb-2 mb-0">Single Menu List</h6>
+                <div class="media text-muted pt-2" th:each="menu: ${menuList}" >
+                    <div class="card col pt-2 pb-2">
+                        <div class="text-left" aria-expanded="true" aria-controls="collapseOne">
+                            <li class="media">
+                                <svg th:if="${#strings.isEmpty(menu?.image)}" th:data-jdenticon-value="${menu.name}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                <img th:if="${!#strings.isEmpty(menu?.image)}" th:src="${menu?.image}" width="64" height="64" class="rounded border mr-3"/>
+                                <div class="media-body">
+                                    <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${menu.name}"></span>&nbsp;<span class="badge badge-secondary">단일메뉴</span></h5>
+                                    <span th:text="${#numbers.formatInteger(menu.getPrice(), 0, 'COMMA')}">1,000</span>&nbsp;<span th:text="${menu.explanation}">설명</span>
+                                </div>
+                            </li>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </ul>
+
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+</body>
+</html>

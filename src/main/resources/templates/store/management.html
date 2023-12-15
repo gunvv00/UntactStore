@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+
+    <div class="container">
+        <div class="row py-4 justify-content-center">
+            <div class="row col-8 py-4 text-left ">
+                <span class="col">
+                    <a href="#" class="text-decoration-none text-dark h2" th:href="@{'/store/' + ${store.path}}">
+                        <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                    </a>
+                    <a class="text-primary h2" th:text="${store.name}" th:href="@{'/store/' + ${store.path}}"></a>
+                </span>
+                <span class="col text-right justify-content-end">
+
+                </span>
+            </div>
+            <div class="row col-8 py-4 text-left ">
+                <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+                    <div class="btn-group mr-2" role="group" aria-label="First group">
+                        <a th:href="@{'/store/'+${store.path}+'/management?tableNo=all'}" class="btn btn-outline-secondary" th:classappend="${remoteControl.tableNo == 'all'}?active">전체</a>
+                        <a th:href="@{'/store/'+${store.path}+'/management?tableNo='+${table.tableNum}}" class="btn btn-outline-secondary" th:each="table: ${store.tableList}" th:classappend="${remoteControl.tableNo == table.tablesPath}?active" th:text="${table.tableNum}">1</a>
+                    </div>
+                </div>
+            </div>
+            <div class="row col-8 py-2 bg-light">
+                <nav class="nav nav-tabs">
+                    <a class="nav-item nav-link" href="#" th:classappend="${remoteControl.menu == 'salesTable'}? active" th:href="@{'/store/' + ${store.path}+'/management?menu=salesTable'}">
+                        <i class="fa fa-info-circle"></i> 매출
+                    </a>
+                    <a class="nav-item nav-link" href="#" th:classappend="${remoteControl.menu == 'menuStatistics'}? active" th:href="@{'/store/' + ${store.path}+'/management?menu=menuStatistics'}">
+                        <i class="fa fa-list-alt" aria-hidden="true"></i> 메뉴 통계
+                    </a>
+                </nav>
+            </div>
+            <div class="row col-8 py-2 justify-content-center">
+                <div class="col-sm-3">
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link list-group-item list-group-item-action d-flex justify-content-between align-items-center btn btn-outline-secondary active" id="v-pills-table-tab" data-toggle="pill" href="#v-pills-table"
+                           role="tab" aria-controls="v-pills-table" aria-selected="true">
+                            표
+                        </a>
+                        <a class="nav-link list-group-item list-group-item-action d-flex justify-content-between align-items-center btn btn-outline-secondary" id="v-pills-graph-tab" data-toggle="pill" href="#v-pills-graph"
+                           role="tab" aria-controls="v-pills-graph" aria-selected="false">
+                            그래프
+                        </a>
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="tab-content" id="v-pills-tabContent">
+                        <div class="tab-pane fade show active" id="v-pills-table" role="tabpanel" aria-labelledby="v-pills-table-tab">
+<!--                            <input type="date">~<input type="date"> <input type="submit" value="설정">-->
+                            <div th:if="${remoteControl.menu =='salesTable'}">매출 표
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <div>
+                                            <th>테이블번호</th>
+                                            <th>손님</th>
+                                            <th>주문</th>
+                                            <th>결제시간</th>
+                                            <th>가격</th>
+                                        </div>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <div th:each="payment: ${paymentList}">
+                                        <tr>
+                                            <th th:text="${payment.tables.tableNum}">테이블번호</th>
+                                            <th th:text="${payment.account.name}">손님</th>
+                                            <th >주문</th>
+                                            <th class="date-time" th:text="${payment.paymentAt}">결제시간</th>
+                                            <th th:text="${#numbers.formatInteger(payment.pay, 0, 'COMMA')}"></th>
+                                        </tr>
+                                    </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div th:if="${remoteControl.menu =='menuStatistics'}">메뉴별 표
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <div>
+                                            <th>메뉴이름</th>
+                                            <th>가격</th>
+                                            <th>수량</th>
+                                            <th>기간</th>
+                                        </div>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <div th:each="menu: ${statistics}">
+                                        <tr>
+                                            <th th:text="${menu.name}">메뉴이름</th>
+                                            <th th:text="${#numbers.formatInteger(menu.price, 0, 'COMMA')}"></th>
+                                            <th th:text="${menu.count}">수량</th>
+                                            <th >결제시간</th>
+                                        </tr>
+                                    </div>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="v-pills-graph" role="tabpanel" aria-labelledby="v-pills-graph-tab">
+                            <div th:if="${remoteControl.menu =='salesTable'}">매출 그래프
+                                <div id="chart_div"></div>
+                            </div>
+                            <div th:if="${remoteControl.menu =='menuStatistics'}">메뉴별 그래프
+                                <div id="chart_pie"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: date-time"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" th:inline="javascript">
+        google.charts.load('current', {'packages':['corechart']});
+
+        google.charts.setOnLoadCallback(drawChart);
+        function drawChart() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'date');
+            data.addColumn('number', 'sales');
+
+            var chartData = /*[[${chartData}]]*/ null;
+
+            var obj = JSON.parse(chartData);
+
+            var arr = [];
+            for (key in obj) {
+                var row = [obj[key].date,obj[key].sales];
+                arr.push(row);
+            }
+            data.addRows(arr);
+
+            // Set chart options
+            var options = {'title':'매출 그래프',
+                'width':400,
+                'height':300};
+
+            // Instantiate and draw our chart, passing in some options.
+            var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+    </script>
+
+<!--    <script type="application/javascript" th:inline="javascript">-->
+<!--        $(function () {-->
+<!--            // /*<![CDATA[*/-->
+<!--            var map = [[${map}]];-->
+<!--            // alert("1"+map);-->
+<!--            // /*]]>*/-->
+<!--            // var map2 = /*[[${map}]]*/ null;-->
+<!--            // alert("2"+map2);-->
+<!--            // var map3 = "[(${map})]";-->
+<!--            alert("3"+map);-->
+<!--        })-->
+<!--    </script>-->
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+
+    <div class="container">
+        <div class="row mt-5 justify-content-center">
+            <div class="col-sm-2">
+                <div th:replace="fragments.html :: settings-menu(currentMenu='profile')"></div>
+            </div>
+            <div class="col-sm-6">
+                <div th:if="${message}" class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                    <span th:text="${message}">메시지</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="row">
+                    <h2 class="col-sm-12" th:text="${account.username}">whiteship</h2>
+                </div>
+                <div class="row">
+                    <form class="col-sm-12" action="#"
+                          th:action="@{/settings/profile}" th:object="${profile}" method="post" novalidate>
+                        <div class="form-group">
+                            <label for="name">이름</label>
+                            <input id="name" type="text" th:field="*{name}" class="form-control"
+                                   placeholder="변경할 이름을 입력하세요." aria-describedby="nameHelp" required>
+                            <small id="nameHelp" class="form-text text-muted">
+                                길지 않게 35자 이내로 입력하세요.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">이메일</label>
+                            <input id="email" type="email" th:field="*{email}" class="form-control"
+                                   placeholder="youremail@email.com" aria-describedby="emailHelp" required>
+                            <small id="emailHelp" class="form-text text-muted">
+                                변경할 이메일을 입력하세요.
+                            </small>
+                            <small class="form-text text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">
+                                옳바른 email이 아닙니다. 예시처럼 입력해 주세요.
+                            </small>
+                        </div>
+
+                        <div class="form-group">
+                            <button class="btn btn-primary btn-block" type="submit"
+                                    aria-describedby="submitHelp">수정하기</button>
+                        </div>
+                    </form>
+                </div>
+                <hr/>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+
+</body>
+</html>

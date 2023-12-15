@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+
+    <div class="container">
+        <div align="center">Table list Page</div>
+        <div>
+            <div class="text-center"><span>Table Llist</span></div>
+            <div class="row justify-content-center">
+                <div class="row col-6">
+                    <div class="col-md-4" th:each="table: ${tablesList}">
+                        <div class="card text-muted bg-white">
+                            <div class="card-body text-dark btn-group-vertical p-0" role="group" aria-label="Basic example">
+                                <a class="btn btn-light bg-white" th:href="@{'/store/'+${store.path}+'/tables/'+${table.tableNum}}"
+                                   data-toggle="tooltip" data-placement="bottom" title="Table Info">
+                                    <h1 class="card-title text-left" th:text="${table.tableNum+' 번'}">turn</h1>
+                                    <h6 class="card-subtitle mb-2 text-muted text-left" th:text="${'최대 '+table.personnel+'좌석'}">인원</h6>
+                                </a>
+                                <a class="btn btn-light bg-white" th:href="@{'/profile/'+${table.account?.username}}"
+                                   data-toggle="tooltip" data-placement="bottom" title="이용자">
+                                    <svg th:if="${table.account}" data-jdenticon-value="nickname"
+                                         th:data-jdenticon-value="${table.account.username}" width="24" height="24" class="rounded border bg-light"></svg>
+                                    <span class="justify-content-end card-text text-left" th:text="${table.account!=null?table.account.name:'　'}">이용자</span>
+                                </a>
+                                <a class="btn btn-light bg-white" th:href="@{'/store/'+${store.path}+'/tables/'+${table.tableNum}}"
+                                   data-toggle="tooltip" data-placement="bottom" title="Table Info">
+                                    <div class="card-text text-right" th:classappend="${table.startedAt!=null}? time" th:text="${table.startedAt!=null?'입장시간 ['+table.startedAt+']':'　'}">입장시간</div>
+                                    <div class="card-text text-right" th:text="${table.pay!=null?#numbers.formatInteger(table.pay, 0, 'COMMA')+'￦':'　'}">pay</div>
+                                </a>
+                                <a class="btn btn-outline-danger" th:href="@{#}"
+                                   data-toggle="tooltip" data-placement="bottom" title="CLEAR">
+                                    CLEAR
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: date-time"></script>
+</body>
+</html>

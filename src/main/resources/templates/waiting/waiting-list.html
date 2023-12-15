@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div class="container">
+
+        <div class="container">
+            <div class="row py-4 text-left justify-content-center bg-light">
+                <div class="col-4">
+                <span class="h2">
+                <a href="#" class="text-decoration-none" th:href="@{'/store/' + ${store.path}}">
+                    <span th:text="${store.name}">상점 이름</span>
+                </a> / </span>
+                    <span class="h2" >Waiting List</span>
+                </div>
+                <div class="col-3 text-right justify-content-end">
+<!--                <span sec:authorize="isAuthenticated()">-->
+<!--                    <button th:if="${event.isEnrollableFor(#authentication.principal)}"-->
+<!--                            class="btn btn-outline-primary" data-toggle="modal" data-target="#enroll">-->
+<!--                        <i class="fa fa-plus-circle"></i> 참가 신청-->
+<!--                    </button>-->
+<!--                    <button th:if="${event.isDisenrollableFor(#authentication.principal)}"-->
+<!--                            class="btn btn-outline-primary" data-toggle="modal" data-target="#disenroll">-->
+<!--                        <i class="fa fa-minus-circle"></i> 참가 신청 취소-->
+<!--                    </button>-->
+<!--                    <span class="text-success" th:if="${event.isAttended(#authentication.principal)}" disabled>-->
+<!--                        <i class="fa fa-check-circle"></i> 참석 완료-->
+<!--                    </span>-->
+<!--                </span>-->
+<!--                </div>-->
+
+<!--                <div class="modal fade" id="disenroll" tabindex="-1" role="dialog" aria-labelledby="leaveTitle" aria-hidden="true">-->
+<!--                    <div class="modal-dialog modal-dialog-centered" role="document">-->
+<!--                        <div class="modal-content">-->
+<!--                            <div class="modal-header">-->
+<!--                                <h5 class="modal-title" id="leaveTitle" th:text="${'오늘 날짜, 시간'}"></h5>&lt;!&ndash;TODO&ndash;&gt;-->
+<!--                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                                    <span aria-hidden="true">&times;</span>-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                            <div class="modal-body">-->
+<!--                                <p>모임 참가 신청을 취소하시겠습니까?</p>-->
+<!--                                <p><strong>확인</strong>하시면 본 참가 신청을 취소하고 다른 대기자에게 참석 기회를 줍니다.</p>-->
+<!--                                <p>감사합니다.</p>-->
+<!--                            </div>-->
+<!--                            <div class="modal-footer">-->
+<!--                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>-->
+<!--                                <form th:action="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/disenroll'}" method="post">-->
+<!--                                    <button class="btn btn-primary" type="submit" aria-describedby="submitHelp">확인</button>-->
+<!--                                </form>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="modal fade" id="enroll" tabindex="-1" role="dialog" aria-labelledby="enrollmentTitle" aria-hidden="true">-->
+<!--                    <div class="modal-dialog modal-dialog-centered" role="document">-->
+<!--                        <div class="modal-content">-->
+<!--                            <div class="modal-header">-->
+<!--                                <h5 class="modal-title" id="enrollmentTitle" th:text="${event.title}"></h5>-->
+<!--                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                                    <span aria-hidden="true">&times;</span>-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                            <div class="modal-body">-->
+<!--                                <p>모임에 참석하시겠습니까? 일정을 캘린더에 등록해 두시면 좋습니다.</p>-->
+<!--                                <p><strong>확인</strong> 버튼을 클릭하면 모임 참가 신청을 합니다.</p>-->
+<!--                                <p>감사합니다.</p>-->
+<!--                            </div>-->
+<!--                            <div class="modal-footer">-->
+<!--                                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>-->
+<!--                                <form th:action="@{'/study/' + ${study.path} + '/events/' + ${event.id} + '/enroll'}" method="post">-->
+<!--                                    <button class="btn btn-primary" type="submit" aria-describedby="submitHelp">확인</button>-->
+<!--                                </form>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                </div>
+            </div>
+            <div class="row px-3 justify-content-center">
+                <div class="col-7 pt-3">
+                    <dt class="font-weight-light">대기자 목록</dt>
+<!--                    <dd >여기에 무슨말을</dd>-->
+<!--TODO-->
+<!--                    <dt class="font-weight-light"></dt>-->
+                    <dd>
+                        <table class="table table-borderless table-sm" th:if="${waitingList.size() > 0}">
+                            <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">대기자</th>
+                                <th scope="col">인원</th>
+                                <th scope="col">대기 신청 일시</th>
+                                <th scope="col">대기 상태</th>
+                                <th scope="col">대기 신청 관리</th>
+                                <th scope="col">출석 체크</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="waiting: ${waitingList}">
+                                <th scope="row" th:text="${waiting.getTurn()}"></th>
+                                <td>
+                                    <a th:href="@{'/profile/' + ${waiting.getAccount().getUsername()}}"
+                                       class="text-decoration-none">
+                                        <svg data-jdenticon-value="nickname"
+                                             th:data-jdenticon-value="${waiting.getAccount().getUsername()}" width="24" height="24" class="rounded border bg-light"></svg>
+                                        <span th:text="${waiting.getAccount().getName()}"></span>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span th:text="${waiting.getPersonnel()}+'명'"></span>
+                                </td>
+                                <td>
+                                    <span class="date-time" th:text="${waiting.getWaitingAt()}"></span>
+                                </td>
+                                <td>
+                                    <span th:if="${!waiting.isAvailable() && waiting.isAttended()}">뭔가 오류가 있다!</span>
+                                    <span th:if="${!waiting.isAvailable() && !waiting.isAttended()}">대기중</span>
+                                    <span th:if="${waiting.isAvailable() && !waiting.isAttended()}">차례</span>
+                                    <span th:if="${waiting.isAvailable() && waiting.isAttended()}">입장완료</span>
+                                </td>
+                                <td>
+                                    <a th:if="${!waiting.isAvailable() && !waiting.isAttended()}" href="#" class="text-decoration-none"
+                                       th:href="@{'/store/' + ${store.path} + '/accept-waiting?id='+${waiting.getId()}}" >신청 수락</a>
+                                    <a th:if="${waiting.isAvailable() && !waiting.isAttended()}" href="#" class="text-decoration-none"
+                                       th:href="@{'/store/' + ${store.path} + '/reject-waiting?id='+${waiting.getId()}}">취소</a>
+                                </td>
+                                <td>
+                                    <a th:if="${waiting.isAvailable() && !waiting.isAttended()}" href="#" class="text-decoration-none"
+                                       th:href="@{'/store/' + ${store.path} + '/waiting/check/in?id='+${waiting.getId()}}">체크인</a>
+                                    <a th:if="${waiting.isAvailable() && waiting.isAttended()}" href="#" class="text-decoration-none"
+                                       th:href="@{'/store/' + ${store.path} + '/waiting/check/cancel?id='+${waiting.getId()}}">체크인 취소</a>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </dd>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: date-time"></script>
+</body>
+</html>

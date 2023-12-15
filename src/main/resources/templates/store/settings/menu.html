@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head"></head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='settings')"></div>
+
+        <div class="row mt-3 justify-content-center">
+            <div class="col-2"></div>
+            <div class="col-sm-2">
+                <div th:replace="fragments.html :: store-settings-menu(currentMenu='menu')"></div>
+            </div>
+            <div class="col-6">
+                <div th:replace="fragments.html :: message"></div>
+                <div class="row">
+                    <div class="col-6 tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+                            <h5>
+                                <i class="fa fa-list" aria-hidden="true"></i> 세뚜메뉴 list
+                                <a class="btn btn-outline-secondary" data-toggle="collapse" href="#addSetmenu" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                    추가
+                                </a>
+                            </h5>
+                            <hr/>
+                            <div class="media text-muted pt-2 accordion" id="accordionExample" th:each="setmenu: ${setmenuList}" >
+                                <div class="card col pt-2 pb-2">
+                                    <button style="padding: unset" class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" th:data-target="'#target'+${setmenu.id}" aria-expanded="true" aria-controls="collapseOne">
+                                        <li class="media">
+                                            <svg th:if="${#strings.isEmpty(setmenu?.image)}" th:data-jdenticon-value="${setmenu.title}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                            <img th:if="${!#strings.isEmpty(setmenu?.image)}" th:src="${setmenu?.image}" width="64" height="64" class="rounded border mr-3"/>
+                                            <div class="media-body">
+                                                <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${setmenu.title}"></span>&nbsp;<span class="badge badge-primary">세트메뉴</span></h5>
+                                                <span th:text="${#numbers.formatInteger(setmenu.getTotalPrice(), 0, 'COMMA')}">1,000</span>&nbsp;<span th:text="${setmenu.explanation}">설명</span>
+                                            </div>
+                                        </li>
+                                    </button>
+                                    <div th:id="'target'+${setmenu.id}" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
+                                        <div class="card-body p-1" th:each="menu: ${setmenu.getMenuList()}">
+                                            <div>&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <strong th:text="${menu.name}">이름</strong>-
+                                                <span th:text="${menu.price}">가격</span>-
+                                                <span th:text="${menu.explanation}">설명</span>
+                                            </div>
+                                        </div>
+                                        <a class="col-2" th:href="@{'/store/'+${store.getPath()}+'/settings/remove-setmenu?id='+${setmenu.getId()}}">삭제</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                            <form class="needs-validation" th:action="@{'/store/' + ${store.getPath()} + '/settings/ready-setmenu'}"
+                                  th:object="${menuForm}" method="post" novalidate>
+                                <div class="form-group">
+                                    <label for="set-name">메뉴 이름</label>
+                                    <input id="set-name" type="text" th:field="*{name}" class="form-control"
+                                           placeholder="메뉴 이름" aria-describedby="set-nameHelp" required maxlength="100">
+                                    <small id="set-nameHelp" class="form-text text-muted">
+                                        메뉴 이름을 입력해 주세요.
+                                    </small>
+                                    <small class="invalid-feedback">메뉴 이름을 입력해 주세요.</small>
+                                    <small class="form-text text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">name Error</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-price">가격</label>
+                                    <input id="set-price" type="text" th:field="*{price}" class="form-control"
+                                           placeholder="숫자" aria-describedby="set-priceHelp" required maxlength="100">
+                                    <small id="set-priceHelp" class="form-text text-muted">
+                                        가격을 입력해주세요.
+                                    </small>
+                                    <small class="invalid-feedback">가격을 입력해주세요.</small>
+                                    <small class="form-text text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">price Error</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="set-explanation">짧은 소개</label>
+                                    <textarea id="set-explanation" type="textarea" th:field="*{explanation}" class="form-control"
+                                              placeholder="메뉴를 짧게 소개해 주세요." aria-describedby="set-explanationHelp" required maxlength="100">
+                                </textarea>
+                                    <small id="set-explanationHelp" class="form-text text-muted">
+                                        100자 이내로 메뉴를 짧은 소개해 주세요.
+                                    </small>
+                                    <small class="invalid-feedback">짧은 소개를 입력하세요.</small>
+                                    <small class="form-text text-danger" th:if="${#fields.hasErrors('explanation')}" th:errors="*{explanation}">Explanation Error</small>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary btn-block" type="submit"
+                                            aria-describedby="submitHelp">추가</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="tab-pane fade" id="pills-image" role="tabpanel" aria-labelledby="pills-image-tab">
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    <h2 class="col-sm-12">이미지 설정</h2>
+                                </div>
+                                <form id="imageForm" action="#" th:action="@{'/store/' + ${store.getPath()} + '/settings/image-setmenu'}" method="post" novalidate>
+                                    <div class="form-group">
+                                        <input id="storeImage" type="hidden" name="setmenuImage" class="form-control" />
+                                    </div>
+                                </form>
+                                <div id="current-store-image" class="mt-3">
+                                    <img th:if="${setmenuForm.image}" class="rounded" th:src="${setmenuForm.image}" width="125" height="125" alt="name" />
+                                </div>
+                                <div id="new-store-image" class="rounded mt-3"></div>
+                                <div class="card-body">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="store-image-file">
+                                        <label class="custom-file-label" for="store-image-file">세트메뉴 이미지 변경</label>
+                                    </div>
+                                    <div id="new-store-image-control" class="mt-3">
+                                        <button class="btn btn-outline-primary btn-block" id="cut-button">자르기</button>
+                                        <button class="btn btn-outline-success btn-block" id="confirm-button">확인</button>
+                                        <button class="btn btn-primary btn-block" id="save-button">저장</button>
+                                        <button class="btn btn-outline-warning btn-block" id="reset-button">취소</button>
+                                    </div>
+                                    <div id="cropped-new-store-image" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="collapse" id="addSetmenu">
+                            <div class="card card-body">
+                                <form id="setmenuForm" class="needs-validation" th:action="@{'/store/' + ${store.getPath()} + '/settings/setmenu'}"
+                                      th:object="${setmenuForm}" method="post" novalidate>
+                                    <div class="form-group">
+                                        <label for="setname">세트 이름</label>
+                                        <input id="setname" type="text" th:field="*{title}" class="form-control"
+                                               placeholder="세트 이름" aria-describedby="setnameHelp" required maxlength="100">
+                                        <small id="setnameHelp" class="form-text text-muted">
+                                            세트 이름을 입력해 주세요.
+                                        </small>
+                                        <small class="invalid-feedback">세트 이름을 입력해 주세요.</small>
+                                        <small class="form-text text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">title Error</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="s-explanation">세트 설명</label>
+                                        <input id="s-explanation" type="text" th:field="*{explanation}" class="form-control"
+                                               placeholder="세트 설명" aria-describedby="s-explanationHelp" required maxlength="100">
+                                        <small id="s-explanationHelp" class="form-text text-muted">
+                                            세트 설명을 입력해 주세요.
+                                        </small>
+                                        <small class="invalid-feedback">세트 설명을 입력해 주세요.</small>
+                                        <small class="form-text text-danger" th:if="${#fields.hasErrors('explanation')}" th:errors="*{explanation}">explanation Error</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary btn-block" type="submit"
+                                                aria-describedby="submitHelp">추가</button>
+                                    </div>
+                                </form>
+                                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">메뉴추가</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-image-tab" data-toggle="pill" href="#pills-image" role="tab" aria-controls="pills-image" aria-selected="true">이미지 설정</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">닫기</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr/>
+                <hr/>
+                <div class="row">
+                    <div class="col-6 tab-content" id="pills-menu-tabContent">
+                        <div class="tab-pane fade show active" id="pills-menu-home" role="tabpanel" aria-labelledby="pills-menu-home-tab">
+                            <h5>
+                                <i class="fa fa-list" aria-hidden="true"></i> 메뉴 list
+                                <a class="btn btn-outline-secondary" data-toggle="collapse" href="#addMenu" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                    추가
+                                </a>
+                            </h5>
+                            <hr/>
+                            <div class="media text-muted pt-2" th:each="menu: ${menuList}" >
+                                <div class="card col pt-2 pb-2">
+                                    <div class="text-left" aria-expanded="true" aria-controls="collapseOne">
+                                        <li class="media">
+                                            <svg th:if="${#strings.isEmpty(menu?.image)}" th:data-jdenticon-value="${menu.name}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                            <img th:if="${!#strings.isEmpty(menu?.image)}" th:src="${menu?.image}" width="64" height="64" class="rounded border mr-3"/>
+                                            <div class="media-body">
+                                                <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${menu.name}"></span>&nbsp;<span class="badge badge-secondary">단일메뉴</span></h5>
+                                                <span th:text="${#numbers.formatInteger(menu.getPrice(), 0, 'COMMA')}">1,000</span>&nbsp;<span th:text="${menu.explanation}">설명</span>
+                                                <a th:href="@{'/store/'+${store.getPath()}+'/settings/remove-menu?id='+${menu.getId()}}">삭제</a>
+                                            </div>
+                                        </li>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-menu-image" role="tabpanel" aria-labelledby="pills-menu-image-tab">
+                            <div class="card text-center">
+                                <div class="card-header">
+                                    <h2 class="col-sm-12">이미지 설정</h2>
+                                </div>
+                                <div id="current-menu-image" class="mt-3">
+<!--                                    <img th:if="${setmenuForm.image}" class="rounded" th:src="${setmenuForm.image}" width="125" height="125" alt="name" />-->
+                                </div>
+                                <div id="new-menu-image" class="rounded mt-3"></div>
+                                <div class="card-body">
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="menu-image-file">
+                                        <label class="custom-file-label" for="menu-image-file">세트메뉴 이미지 변경</label>
+                                    </div>
+                                    <div id="new-menu-image-control" class="mt-3">
+                                        <button class="btn btn-outline-primary btn-block" id="cut-button2">자르기</button>
+                                        <button class="btn btn-outline-success btn-block" id="confirm-button2">확인</button>
+<!--                                        <button class="btn btn-primary btn-block" id="save-button2">저장</button>-->
+                                        <button class="btn btn-outline-warning btn-block" id="reset-button2">취소</button>
+                                    </div>
+                                    <div id="cropped-new-menu-image" class="mt-3"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="collapse" id="addMenu">
+                            <div class="card card-body">
+                                <form class="needs-validation" th:action="@{'/store/' + ${store.getPath()} + '/settings/menu'}"
+                                      th:object="${menuForm}" method="post" novalidate>
+                                    <div class="form-group">
+                                        <label for="name">메뉴 이름</label>
+                                        <input id="name" type="text" th:field="*{name}" class="form-control"
+                                               placeholder="메뉴 이름" aria-describedby="nameHelp" required maxlength="100">
+                                        <small id="nameHelp" class="form-text text-muted">
+                                            메뉴 이름을 입력해 주세요.
+                                        </small>
+                                        <small class="invalid-feedback">메뉴 이름을 입력해 주세요.</small>
+                                        <small class="form-text text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">name Error</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="price">가격</label>
+                                        <input id="price" type="text" th:field="*{price}" class="form-control"
+                                               placeholder="숫자" aria-describedby="priceHelp" required maxlength="100">
+                                        <small id="priceHelp" class="form-text text-muted">
+                                            가격을 입력해주세요.
+                                        </small>
+                                        <small class="invalid-feedback">가격을 입력해주세요.</small>
+                                        <small class="form-text text-danger" th:if="${#fields.hasErrors('price')}" th:errors="*{price}">price Error</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="explanation">짧은 소개</label>
+                                        <textarea id="explanation" type="textarea" th:field="*{explanation}" class="form-control"
+                                                  placeholder="메뉴를 짧게 소개해 주세요." aria-describedby="shortDescriptionHelp" required maxlength="100">
+                                        </textarea>
+                                        <small id="shortDescriptionHelp" class="form-text text-muted">
+                                            100자 이내로 상점를 짧은 소개해 주세요.
+                                        </small>
+                                        <small class="invalid-feedback">짧은 소개를 입력하세요.</small>
+                                        <small class="form-text text-danger" th:if="${#fields.hasErrors('explanation')}" th:errors="*{explanation}">Explanation Error</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <input id="menuImage" type="hidden" name="image" class="form-control" />
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn btn-primary btn-block" type="submit"
+                                                aria-describedby="submitHelp">추가</button>
+                                    </div>
+                                </form>
+                                <ul class="nav nav-pills mb-3" id="pills-menu-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link" id="pills-menu-image-tab" data-toggle="pill" href="#pills-menu-image" role="tab" aria-controls="pills-menu-image" aria-selected="true">이미지 설정</a>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <a class="nav-link active" id="pills-menu-home-tab" data-toggle="pill" href="#pills-menu-home" role="tab" aria-controls="pills-menu-home" aria-selected="true">닫기</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <h5 th:if="${readyMenuList.size() != 0}">추가예정인 메뉴</h5>
+                <div th:each="readyMenu: ${readyMenuList}">
+                    <div role="alert" aria-live="assertive" aria-atomic="true" class="toast show" data-autohide="false">
+                        <div class="toast-header">
+                            <strong class="mr-auto" th:text="${readyMenu.getName()}">Bootstrap</strong>
+                            <small th:text="${#numbers.formatInteger(readyMenu.getPrice(), 0, 'COMMA')}+'원'">가격</small>
+                            <form th:action="@{'/store/'+${store.getPath()}+'/settings/remove-ready-setmenu'}" method="post">
+                                <input hidden name="id" type="text" th:value="${readyMenu.getId()}">
+                                <button type="submit" class="ml-2 mb-1 close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="toast-body" th:text="${readyMenu.getExplanation()}">설명</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+    <script th:replace="fragments.html :: form-validation"></script>
+    <script th:replace="fragments.html :: editor-script"></script>
+
+    <link  href="/node_modules/cropper/dist/cropper.min.css" rel="stylesheet">
+    <script src="/node_modules/cropper/dist/cropper.min.js"></script>
+    <script src="/node_modules/jquery-cropper/dist/jquery-cropper.min.js"></script>
+    <script type="application/javascript">
+        $(function() {
+            cropper = '';
+            let $confirmBtn = $("#confirm-button");
+            let $resetBtn = $("#reset-button");
+            let $cutBtn = $("#cut-button");
+            let $saveBtn = $("#save-button");
+            let $newStoreImage = $("#new-store-image");
+            let $currentStoreImage = $("#current-store-image");
+            let $resultImage = $("#cropped-new-store-image");
+            let $storeImage = $("#storeImage");
+
+            $newStoreImage.hide();
+            $cutBtn.hide();
+            $resetBtn.hide();
+            $confirmBtn.hide();
+            $saveBtn.hide();
+
+            $("#store-image-file").change(function(e) {
+                if (e.target.files.length === 1) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        if (e.target.result) {
+                            if (!e.target.result.startsWith("data:image")) {
+                                alert("이미지 파일을 선택하세요.");
+                                return;
+                            }
+
+                            let img = document.createElement("img");
+                            img.id = 'new-store';
+                            img.src = e.target.result;
+                            img.setAttribute('width', '100%');
+
+                            $newStoreImage.html(img);
+                            $newStoreImage.show();
+                            $currentStoreImage.hide();
+
+                            let $newImage = $(img);
+                            $newImage.cropper({aspectRatio: 1});
+                            cropper = $newImage.data('cropper');
+
+                            $cutBtn.show();
+                            $confirmBtn.hide();
+                            $resetBtn.show();
+                        }
+                    };
+
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+
+            $resetBtn.click(function() {
+                $currentStoreImage.show();
+                $newStoreImage.hide();
+                $resultImage.hide();
+                $resetBtn.hide();
+                $cutBtn.hide();
+                $confirmBtn.hide();
+                $saveBtn.hide();
+                $storeImage.val('');
+            });
+
+            $cutBtn.click(function () {
+                let dataUrl = cropper.getCroppedCanvas().toDataURL();
+
+                if (dataUrl.length > 1000 * 1024) {
+                    alert("이미지 파일이 너무 큽니다. 1024000 보다 작은 파일을 사용하세요. 현재 이미지 사이즈 " + dataUrl.length);
+                    return;
+                }
+
+                let newImage = document.createElement("img");
+                newImage.id = "cropped-new-store-image";
+                newImage.src = dataUrl;
+                newImage.width = 125;
+                $resultImage.html(newImage);
+                $resultImage.show();
+                $confirmBtn.show();
+
+                $confirmBtn.click(function () {
+                    $newStoreImage.html(newImage);
+                    $cutBtn.hide();
+                    $confirmBtn.hide();
+                    $storeImage.val(dataUrl);
+                    $saveBtn.show();
+                });
+            });
+
+            $saveBtn.click(function() {
+                $("#imageForm").submit();
+            })
+        });
+    </script>
+    <script type="application/javascript">
+        $(function() {
+            cropper = '';
+            let $confirmBtn = $("#confirm-button2");
+            let $resetBtn = $("#reset-button2");
+            let $cutBtn = $("#cut-button2");
+            let $saveBtn = $("#save-button2");
+            let $newStoreImage = $("#new-menu-image");
+            let $currentStoreImage = $("#current-menu-image");
+            let $resultImage = $("#cropped-new-menu-image");
+            let $storeImage = $("#menuImage");
+
+            $newStoreImage.hide();
+            $cutBtn.hide();
+            $resetBtn.hide();
+            $confirmBtn.hide();
+            $saveBtn.hide();
+
+            $("#menu-image-file").change(function(e) {
+                if (e.target.files.length === 1) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        if (e.target.result) {
+                            if (!e.target.result.startsWith("data:image")) {
+                                alert("이미지 파일을 선택하세요.");
+                                return;
+                            }
+
+                            let img = document.createElement("img");
+                            img.id = 'new-menu';
+                            img.src = e.target.result;
+                            img.setAttribute('width', '100%');
+
+                            $newStoreImage.html(img);
+                            $newStoreImage.show();
+                            $currentStoreImage.hide();
+
+                            let $newImage = $(img);
+                            $newImage.cropper({aspectRatio: 1});
+                            cropper = $newImage.data('cropper');
+
+                            $cutBtn.show();
+                            $confirmBtn.hide();
+                            $resetBtn.show();
+                        }
+                    };
+
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+
+            $resetBtn.click(function() {
+                $currentStoreImage.show();
+                $newStoreImage.hide();
+                $resultImage.hide();
+                $resetBtn.hide();
+                $cutBtn.hide();
+                $confirmBtn.hide();
+                $saveBtn.hide();
+                $storeImage.val('');
+            });
+
+            $cutBtn.click(function () {
+                let dataUrl = cropper.getCroppedCanvas().toDataURL();
+
+                if (dataUrl.length > 1000 * 1024) {
+                    alert("이미지 파일이 너무 큽니다. 1024000 보다 작은 파일을 사용하세요. 현재 이미지 사이즈 " + dataUrl.length);
+                    return;
+                }
+
+                let newImage = document.createElement("img");
+                newImage.id = "cropped-new-menu-image";
+                newImage.src = dataUrl;
+                newImage.width = 125;
+                $resultImage.html(newImage);
+                $resultImage.show();
+                $confirmBtn.show();
+
+                $confirmBtn.click(function () {
+                    $newStoreImage.html(newImage);
+                    $cutBtn.hide();
+                    $confirmBtn.hide();
+                    $storeImage.val(dataUrl);
+                    $saveBtn.show();
+                });
+            });
+
+            $saveBtn.click(function() {
+                $("#imageForm").submit();
+            })
+        });
+    </script>
+</body>
+</html>

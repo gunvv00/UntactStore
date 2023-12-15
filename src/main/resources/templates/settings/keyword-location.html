@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+
+    <div class="container">
+        <div class="row mt-5 justify-content-center">
+            <div class="col-sm-2">
+                <div th:replace="fragments.html :: settings-menu(currentMenu='keyword-location')"></div>
+            </div>
+            <div class="col-sm-6">
+                <div th:if="${message}" class="alert alert-info alert-dismissible fade show mt-3" role="alert">
+                    <span th:text="${message}">메시지</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="row">
+                    <h2 class="col-sm-12">키워드 / 지역</h2>
+                    <div class="alert alert-info" role="alert">
+                        관심있는 태그를 입력해 주세요. 태그를 입력하고 콤마(,) 또는 엔터를 입력하세요.
+                    </div>
+                </div>
+                <div class="row">
+                    <h3 class="col-sm-12">관심있는 키워드</h3>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div id="whitelistOfKeyword" th:text="${whitelistOfKeyword}" hidden></div>
+                        <input id="keywords" type="text" name="keywords" th:value="${#strings.listJoin(keywords, ',')}"
+                               class="tagify-outside" aria-describedby="keywordHelp"/>
+                    </div>
+                </div>
+                <hr/>
+                <div class="row">
+                    <h3 class="col-sm-12">주요 활동 지역</h3>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div id="whitelistOfLocation" th:text="${whitelistOfLocation}" hidden></div>
+                        <input id="locations" type="text" name="locations" th:value="${#strings.listJoin(locations, ',')}"
+                               class="tagify-outside" aria-describedby="locationHelp"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+
+
+    <script src="/node_modules/@yaireo/tagify/dist/tagify.min.js"></script>
+    <script type="application/javascript" th:inline="javascript">
+        $(function() {
+            var csrfToken = /*[[${_csrf.token}]]*/ null;
+            var csrfHeader = /*[[${_csrf.headerName}]]*/ null;
+            $(document).ajaxSend(function (e, xhr, options) {
+                xhr.setRequestHeader(csrfHeader, csrfToken);
+            });
+        });
+    </script>
+    <script type="application/javascript" th:inline="javascript">
+        $(function() {
+            //keyword
+            function keywordRequest(url, name) {
+                $.ajax({
+                    dataType: "json",
+                    autocomplete: {
+                        enabled: true,
+                        rightKey: true,
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    method: "POST",
+                    url: "/settings/keywords" + url,
+                    data: JSON.stringify({'name': name})
+                }).done(function (data, status) {
+                    console.log("${data} and status is ${status}");
+                });
+            }
+
+            function onKewordAdd(e) {
+                keywordRequest("/add", e.detail.data.value);
+            }
+
+            function onKewordRemove(e) {
+                keywordRequest("/remove", e.detail.data.value);
+            }
+
+            var keywordInput = document.querySelector("#keywords");
+            var keyword = new Tagify(keywordInput, {
+                pattern: /^.{0,20}$/,
+                whitelist: JSON.parse(document.querySelector("#whitelistOfKeyword").textContent),
+                dropdown : {
+                    enabled: 1, // suggest tags after a single character input
+                } // map tags
+            });
+            keyword.on("add", onKewordAdd);
+            keyword.on("remove", onKewordRemove);
+            // add a class to Tagify's input element
+            keyword.DOM.input.classList.add('form-control');
+            // re-place Tagify's input element outside of the  element (tagify1.DOM.scope), just before it
+            keyword.DOM.scope.parentNode.insertBefore(keyword.DOM.input, keyword.DOM.scope);
+
+            //location
+            function locationRequest(url, name) {
+                $.ajax({
+                    dataType: "json",
+                    autocomplete: {
+                        enabled: true,
+                        rightKey: true,
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    method: "POST",
+                    url: "/settings/locations" + url,
+                    data: JSON.stringify({'name': name})
+                }).done(function (data, status) {
+                    console.log("${data} and status is ${status}");
+                });
+            }
+
+            function onLocationAdd(e) {
+                locationRequest("/add", e.detail.data.value);
+            }
+
+            function onLocationRemove(e) {
+                locationRequest("/remove", e.detail.data.value);
+            }
+
+            var locationInput = document.querySelector("#locations");
+            var location = new Tagify(locationInput, {
+                pattern: /^.{0,20}$/,
+                whitelist: JSON.parse(document.querySelector("#whitelistOfLocation").textContent),
+                dropdown : {
+                    enabled: 1, // suggest tags after a single character input
+                } // map tags
+            });
+            location.on("add", onLocationAdd);
+            location.on("remove", onLocationRemove);
+            // add a class to Tagify's input element
+            location.DOM.input.classList.add('form-control');
+            // re-place Tagify's input element outside of the  element (tagify1.DOM.scope), just before it
+            location.DOM.scope.parentNode.insertBefore(location.DOM.input, location.DOM.scope);
+        });
+    </script>
+</body>
+</html>

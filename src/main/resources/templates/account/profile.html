@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments.html :: head"></head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div class="container">
+        <div class="row mt-5 justify-content-center">
+            <div class="col-sm-2">
+                <!-- Avatar -->
+                <svg class="img-fluid float-left rounded img-thumbnail"
+                     th:data-jdenticon-value="${profileAccount.username}" width="125" height="125"></svg>
+            </div>
+            <div class="col-sm-6">
+                <h1 class="display-4 " th:text="${profileAccount.username}">byungryang</h1>
+            </div>
+        </div>
+
+        <div class="row mt-3 justify-content-center">
+            <div class="col-sm-2">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <a class="nav-link" th:classappend="${view=='profile'}? active" id="v-pills-intro-tab" data-toggle="pill" href="#v-pills-profile"
+                       role="tab" aria-controls="v-pills-profile" aria-selected="true">기본정보</a>
+                    <a class="nav-link"  id="v-pills-study-tab" data-toggle="pill" href="#v-pills-study"
+                       role="tab" aria-controls="v-pills-study" aria-selected="false">즐겨찾기</a>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="tab-content" id="v-pills-tabContent">
+                    <div class="tab-pane fade" th:classappend="${view=='profile'}? 'show active'" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-home-tab">
+                        <p th:if="${!#strings.isEmpty(profileAccount.name)}">
+                            <span style="font-size: 20px;">
+                                <i class="fa fa-address-card" aria-hidden="true"></i>
+                            </span>
+                            <span th:text="${profileAccount.name}" class="col-11"></span>
+                        </p>
+                        <p th:if="${!#strings.isEmpty(profileAccount.email)}">
+                            <span style="font-size: 20px;">
+                                <i class="fa fa-envelope-o" aria-hidden="true"></i>
+                            </span>
+                            <span th:text="${profileAccount.email}" class="col-9"></span>
+                        </p>
+                        <p th:if="${!#strings.isEmpty(profileAccount.report)}">
+                            <span style="font-size: 20px;">
+                                <i class="fa fa-bomb" aria-hidden="true"></i>
+                            </span>
+                            <span th:text="${profileAccount.reportSize()}" class="col-9"></span>
+                            <div th:text="${profileUsername}">엥</div>
+                            <span>
+                                <a th:if="${profileAccount.isReportable(#authentication.principal)}" th:href="'/profile/'+${profileUsername}+'/report'">신고</a>
+                                <a th:if="${!profileAccount.isReportable(#authentication.principal)}" th:href="'/profile/'+${profileUsername}+'/report-cancel'">신고취소</a>
+                            </span>
+                        </p>
+                        <div th:if="${isOwner}">
+                            <a class="btn btn-outline-primary" href="#" th:href="@{/settings/profile}">프로필 수정</a>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" th:classappend="${view=='favorites'}? 'show active'" id="v-pills-study" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                        <div th:replace="fragments.html :: store-list (storeList=${favoritesStoreList})"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

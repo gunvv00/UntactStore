@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments.html :: head">
+</head>
+<body class="bg-light">
+    <div th:replace="fragments.html :: main-nav(${account})"></div>
+    <div th:replace="fragments.html :: store-banner"></div>
+    <div class="container">
+        <div th:replace="fragments.html :: store-info"></div>
+        <div th:replace="fragments.html :: store-menu(storeMenu='review')"></div>
+
+        <ul class="list-unstyled">
+        <div class="row px-3 justify-content-center">
+            <div class="col-8 my-3 p-3 bg-light rounded shadow-sm">
+                <h6 class="border-bottom border-gray pb-2 mb-0"><i class="fa fa-table" aria-hidden="true"></i> Review Board</h6>
+                <div class="media text-muted pt-2" th:each="review: ${reviews}" >
+                    <div class="card col pt-2 pb-2">
+                        <div class="text-left" aria-expanded="true" aria-controls="collapseOne">
+                            <li class="media">
+                                <svg th:data-jdenticon-value="${review.getAccount().getName()}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                <div class="media-body">
+                                    <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${review.getAccount().getName()}">이름</span>&nbsp;<span class="badge badge-secondary">사람</span>&nbsp;<small class="date-time" th:text="${review.reviewAt}"></small></h5>
+                                    <span th:text="${review.content}">댓글</span>
+                                    <a class="btn btn-link" data-toggle="collapse" th:href="'#taget'+${review.getId()}" role="button" aria-expanded="false" aria-controls="collapseExample">
+                                        <small>답글 작성</small>
+                                    </a>
+                                    <div class="card" th:each="reply: ${review.getReplies()}">
+                                        <div class="card-body media pt-2 pb-2">
+                                            <svg th:data-jdenticon-value="${reply.getAccount().getName()}" width="64" height="64" class="rounded border bg-light mr-3"></svg>
+                                            <div class="media-body">
+                                                <h5 class="p-0 mt-0 mb-1 text-gray-dark col-10"><span th:text="${reply.getAccount().getName()}">이름</span>&nbsp;<span class="badge badge-secondary">답글</span>&nbsp;<small class="date-time" th:text="${reply.replyAt}"></small></h5>
+                                                <span th:text="${reply.content}">댓글</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" th:id="'taget'+${review.getId()}">
+                                        <div class="card card-body pt-2 pb-2">
+                                            <form th:object="${replyForm}" th:action="@{'/store/'+${store.path}+'/reply/add'}" method="post">
+                                                <input hidden name="review_id" th:value="${review.getId()}">
+                                                <div class="input-group">
+                                                    <textarea class="form-control" type="textarea" th:field="*{content}" aria-label="With textarea" placeholder="답글을 작성해주세요." required></textarea>
+                                                    <div class="input-group-prepend">
+                                                        <button class="btn btn-link" type="submit">
+                                                            <span class="input-group-text">작성</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body pt-2 pb-2">
+                        <form th:object="${reviewForm}" th:action="@{'/store/'+${store.path}+'/review/add'}" method="post">
+                            <div class="input-group">
+                                <textarea class="form-control" type="textarea" th:field="*{content}" aria-label="With textarea" placeholder="댓글을 작성해주세요." required></textarea>
+                                <div class="input-group-prepend">
+                                    <button class="btn btn-link" type="submit">
+                                    <span class="input-group-text">작성</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </ul>
+
+        <div th:replace="fragments.html :: footer"></div>
+    </div>
+    <script th:replace="fragments.html :: tooltip"></script>
+    <script th:replace="fragments.html :: date-time"></script>
+</body>
+</html>
